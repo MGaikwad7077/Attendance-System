@@ -7,20 +7,69 @@
   <style>
     body { font-family: Arial; padding: 20px; background: #f5f7fb; }
     h2 { text-align: center; }
-    input { padding: 8px; margin-bottom: 10px; width: 100%; max-width: 300px; }
-    table { border-collapse: collapse; width: 100%; background: white; border-radius: 10px; overflow: hidden; font-size: 14px; }
-    @media (max-width: 600px) {
-      th, td { padding: 8px; font-size: 13px; }
-      button { width: 100%; margin-top: 8px; }
-      input { width: 100%; }
+
+    .top-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
     }
+
+    input {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      flex: 1;
+      min-width: 140px;
+    }
+
+    table { border-collapse: collapse; width: 100%; background: white; border-radius: 10px; overflow: hidden; font-size: 14px; }
+
     th { background: #4CAF50; color: white; }
     th, td { padding: 10px; text-align: left; }
     tr:nth-child(even) { background: #f2f2f2; }
-    button { margin-top: 10px; padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.03);
+      opacity: 0.9;
+    }
+
     .btn-primary { background: #4CAF50; color: white; }
     .btn-secondary { background: #2196F3; color: white; }
+    .btn-danger { background: #f44336; color: white; }
+
     .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+    pre {
+      background: white;
+      color: black;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+      border: 1px solid #ccc;
+    }
+
+    @media (max-width: 600px) {
+      button { width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -28,6 +77,13 @@
 <h2>📋 Attendance System</h2>
 
 <div class="card">
+
+  <!-- TOP INPUTS FIRST -->
+  <div class="top-controls">
+    <input type="date" id="attendanceDate">
+    <input type="text" id="className" placeholder="Class (e.g., 5th Jupiter)">
+  </div>
+
   <input type="text" id="search" placeholder="🔍 Search student..." onkeyup="filterStudents()">
 
   <table id="studentTable">
@@ -40,70 +96,106 @@
     <tbody></tbody>
   </table>
 
-  <button class="btn-primary" onclick="markAll(true)">✔ Mark All Present</button>
-  <button class="btn-secondary" onclick="markAll(false)">❌ Mark All Absent</button>
-  <button class="btn-primary" onclick="showAbsent()">Show Absent Students</button>
+  <!-- USER FRIENDLY BUTTON GROUP -->
+  <div class="btn-group">
+    <button class="btn-primary" onclick="markAll(true)">✔ All Present</button>
+    <button class="btn-danger" onclick="markAll(false)">❌ All Absent</button>
+    <button class="btn-primary" onclick="showAbsent()">📊 Show Absent</button>
+    <button class="btn-secondary" onclick="copyAbsent()">📋 Copy</button>
+  </div>
 
-  <h3>Absent Students:</h3>
-  <ul id="absentList"></ul>
+  <h3>Output:</h3>
+  <pre id="absentOutput"></pre>
 </div>
 
 <script>
-  const students = [
-"Advait Jadhav","Adhira Singh (New)","Ansh Baban Kathavale","Ansh Rupesh Ubhare","Arnav Amol Gholap","Avni Prasad Gowari","Bhargavi Abhijit Sawant","Daksh Mhatre","Devansh Shailendra Dighe","Evara Raipure","Hardik Raul","Himani Punia","Hridyansh Ghawri","Kevin Jitendra Thalkar","Kumari Pari","Maheshwari Dadasaheb Solankar","Miheera Patil","Nidhi Kedari","Niyati Dubey","Parth Gorakshanath Patil","Pranavi Priyam","Prathamesh Mayur Yadav","Priyaj Pankaj Modi","Rudra Daki","Sarthak Mangesh Jadhav","Sejal Sunil Pawar","Shlok Bhoir","Shreeansh Sandeep Rathod","Shreeja Das","Shriya Naresh Patil","Smit Sate","Sohan Behera","Swara Gawas","Swara Tambvekar","Swaraj Salunkhe","Tanya Shree","Vanshika Patil","Vihan Duduskar","Vivaan Kumar","Yatharth Dolgharkar","Yohan Choudhury","Yuvi Nilesh Mali"
+const students = [
+"Advait Jadhav","Adhira singh( new)","Ansh Baban Kathavale","Ansh Rupesh Ubhare","Arnav Amol Gholap","Avni Prasad Gowari","Bhargavi Abhijit Sawant","Daksh Mhatre","Devansh Shailendra Dighe","Evara Raipure","Hardik Raul","Himani Punia","Hridyansh Ghawri","Kevin JitendraThalkar","Kumari pari","Maheshwari Dadasaheb Solankar","Miheera Patil","Nidhi Kedari","Niyati Dubey","Parth Gorakshanath Patil","Pranavi Priyam","Prathamesh Mayur Yadav","Priyaj Pankaj Modi","Rudra Daki","Sarthak Mangesh Jadhav","Sejal Sunil Pawar","Shlok Bhoir","Shreeansh Sandeep Rathod","Shreeja Das","Shriya Naresh Patil","Smit Sate","Sohan Behera","Swara Gawas","Swara Tambvekar","Swaraj Salunkhe","Tanya Shree","Vanshika Patil","Vihan Duduskar","Vivaan Kumar","Yatharth Dolgharkar","Yohan Choudhury","Yuvi Nilesh Mali"
 ];
 
-  const tableBody = document.querySelector("#studentTable tbody");
+const tableBody = document.querySelector("#studentTable tbody");
 
-  function renderTable(list) {
-    tableBody.innerHTML = "";
-    list.forEach(name => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${name}</td>
-        <td><input type="checkbox" /></td>
-      `;
-      tableBody.appendChild(row);
-    });
+function renderTable(list) {
+  tableBody.innerHTML = "";
+  list.forEach(name => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${name}</td>
+      <td><input type="checkbox" /></td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+function filterStudents() {
+  const value = document.getElementById("search").value.toLowerCase();
+  const filtered = students.filter(s => s.toLowerCase().includes(value));
+  renderTable(filtered);
+}
+
+function markAll(status) {
+  document.querySelectorAll("tbody input").forEach(cb => cb.checked = status);
+}
+
+function showAbsent() {
+  const rows = document.querySelectorAll("#studentTable tbody tr");
+  let absentNames = [];
+
+  rows.forEach(row => {
+    const name = row.children[0].innerText;
+    const isPresent = row.children[1].children[0].checked;
+
+    if (!isPresent) {
+      absentNames.push(name);
+    }
+  });
+
+  const dateInput = document.getElementById("attendanceDate").value;
+  const className = document.getElementById("className").value || "Class";
+
+  let formattedDate = "";
+  if (dateInput) {
+    const d = new Date(dateInput);
+    formattedDate = `${d.getDate()}.${d.getMonth()+1}.${String(d.getFullYear()).slice(2)}`;
   }
 
-  function filterStudents() {
-    const value = document.getElementById("search").value.toLowerCase();
-    const filtered = students.filter(s => s.toLowerCase().includes(value));
-    renderTable(filtered);
+  let output = `*Absent students ${formattedDate}*\n${className}\n`;
+
+  absentNames.forEach(name => {
+    output += name + "\n";
+  });
+
+  document.getElementById("absentOutput").innerText = output;
+}
+
+function copyAbsent() {
+  const text = document.getElementById("absentOutput").innerText;
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  try {
+    document.execCommand("copy");
+    alert("Copied to clipboard!");
+  } catch (err) {
+    alert("Copy failed. Please copy manually.");
   }
 
-  function markAll(status) {
-    document.querySelectorAll("tbody input").forEach(cb => cb.checked = status);
-  }
+  document.body.removeChild(textarea);
+}
 
-  function showAbsent() {
-    const rows = document.querySelectorAll("#studentTable tbody tr");
-    const absentList = document.getElementById("absentList");
-    absentList.innerHTML = "";
-
-    rows.forEach(row => {
-      const name = row.children[0].innerText;
-      const isPresent = row.children[1].children[0].checked;
-
-      if (!isPresent) {
-        const li = document.createElement("li");
-        li.innerText = name;
-        absentList.appendChild(li);
-      }
-    });
-  }
-
-  renderTable(students);
-  // Disable right click
-document.addEventListener("contextmenu", e => e.preventDefault());
-
-// Disable keyboard shortcuts (view source, inspect)
-document.onkeydown = function(e) {
-  if (e.keyCode == 123) return false; // F12
-  if (e.ctrlKey && e.shiftKey && e.keyCode == 73) return false; // Ctrl+Shift+I
-  if (e.ctrlKey && e.keyCode == 85) return false; // Ctrl+U
+// Auto set today's date
+window.onload = () => {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  document.getElementById("attendanceDate").value = `${yyyy}-${mm}-${dd}`;
 };
+
+renderTable(students);
 </script>
 
 </body>
