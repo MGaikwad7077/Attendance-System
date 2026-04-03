@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance System</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f5f7fb; }
+    h2 { text-align: center; }
+    input { padding: 8px; margin-bottom: 10px; width: 100%; max-width: 300px; }
+    table { border-collapse: collapse; width: 100%; background: white; border-radius: 10px; overflow: hidden; font-size: 14px; }
+    @media (max-width: 600px) {
+      th, td { padding: 8px; font-size: 13px; }
+      button { width: 100%; margin-top: 8px; }
+      input { width: 100%; }
+    }
+    th { background: #4CAF50; color: white; }
+    th, td { padding: 10px; text-align: left; }
+    tr:nth-child(even) { background: #f2f2f2; }
+    button { margin-top: 10px; padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; }
+    .btn-primary { background: #4CAF50; color: white; }
+    .btn-secondary { background: #2196F3; color: white; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+
+<h2>📋 Attendance System</h2>
+
+<div class="card">
+  <input type="text" id="search" placeholder="🔍 Search student..." onkeyup="filterStudents()">
+
+  <table id="studentTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Present</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button class="btn-primary" onclick="markAll(true)">✔ Mark All Present</button>
+  <button class="btn-secondary" onclick="markAll(false)">❌ Mark All Absent</button>
+  <button class="btn-primary" onclick="showAbsent()">Show Absent Students</button>
+
+  <h3>Absent Students:</h3>
+  <ul id="absentList"></ul>
+</div>
+
+<script>
+  const students = [
+"Advait Jadhav","Adhira Singh (New)","Ansh Baban Kathavale","Ansh Rupesh Ubhare","Arnav Amol Gholap","Avni Prasad Gowari","Bhargavi Abhijit Sawant","Daksh Mhatre","Devansh Shailendra Dighe","Evara Raipure","Hardik Raul","Himani Punia","Hridyansh Ghawri","Kevin Jitendra Thalkar","Kumari Pari","Maheshwari Dadasaheb Solankar","Miheera Patil","Nidhi Kedari","Niyati Dubey","Parth Gorakshanath Patil","Pranavi Priyam","Prathamesh Mayur Yadav","Priyaj Pankaj Modi","Rudra Daki","Sarthak Mangesh Jadhav","Sejal Sunil Pawar","Shlok Bhoir","Shreeansh Sandeep Rathod","Shreeja Das","Shriya Naresh Patil","Smit Sate","Sohan Behera","Swara Gawas","Swara Tambvekar","Swaraj Salunkhe","Tanya Shree","Vanshika Patil","Vihan Duduskar","Vivaan Kumar","Yatharth Dolgharkar","Yohan Choudhury","Yuvi Nilesh Mali"
+];
+
+  const tableBody = document.querySelector("#studentTable tbody");
+
+  function renderTable(list) {
+    tableBody.innerHTML = "";
+    list.forEach(name => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${name}</td>
+        <td><input type="checkbox" /></td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
+
+  function filterStudents() {
+    const value = document.getElementById("search").value.toLowerCase();
+    const filtered = students.filter(s => s.toLowerCase().includes(value));
+    renderTable(filtered);
+  }
+
+  function markAll(status) {
+    document.querySelectorAll("tbody input").forEach(cb => cb.checked = status);
+  }
+
+  function showAbsent() {
+    const rows = document.querySelectorAll("#studentTable tbody tr");
+    const absentList = document.getElementById("absentList");
+    absentList.innerHTML = "";
+
+    rows.forEach(row => {
+      const name = row.children[0].innerText;
+      const isPresent = row.children[1].children[0].checked;
+
+      if (!isPresent) {
+        const li = document.createElement("li");
+        li.innerText = name;
+        absentList.appendChild(li);
+      }
+    });
+  }
+
+  renderTable(students);
+  // Disable right click
+document.addEventListener("contextmenu", e => e.preventDefault());
+
+// Disable keyboard shortcuts (view source, inspect)
+document.onkeydown = function(e) {
+  if (e.keyCode == 123) return false; // F12
+  if (e.ctrlKey && e.shiftKey && e.keyCode == 73) return false; // Ctrl+Shift+I
+  if (e.ctrlKey && e.keyCode == 85) return false; // Ctrl+U
+};
+</script>
+
+</body>
+</html>
